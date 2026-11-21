@@ -1,0 +1,25 @@
+# 一画专利评估分析系统 — 运行时依赖
+#
+# 安装：pip install -r requirements.txt
+#
+# 说明：数据源凭证（天眼查、智慧芽、剑鱼、企查查等）不随代码分发，
+#      请通过环境变量或本地密钥文件注入，参考 docs/techcredit.env.example。
+
+# --- Web / MCP 服务面 ---
+fastapi>=0.110
+uvicorn>=0.27
+mcp>=1.2
+
+# --- 数据校验与结构化输出 ---
+pydantic>=2.0
+
+# --- HTTP 客户端 ---
+requests>=2.31
+
+# --- 金融与财务数据 ---
+akshare>=1.12
+pandas>=2.0
+numpy>=1.24
+
+# --- PDF 解析（招股书等底稿） ---
+pypdf>=4.0

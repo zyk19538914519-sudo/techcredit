@@ -1,6 +1,6 @@
 【比赛项目：企业技术信用评估系统（银行审贷科技尽调）】架构规划（2026-11-21确定）：
-一、数据层（部署在火山云服务器 /root/projects/techcredit，明确要求不碰本地服务器）：数据网关统一调用天眼查、智慧芽等API，SQLite+JSON落盘本地缓存；每条原始专利/中标公告/司法记录分配全局唯一Source_ID（格式 KIND-PROVIDER-hash10，确定性可幂等）；底稿统一入库云端WeKnora（http://127.0.0.1:8080/api/v1）。
+一、数据层（部署于云端服务器，凭证统一由环境变量注入）：数据网关统一调用天眼查、智慧芽等API，SQLite+JSON落盘本地缓存；每条原始专利/中标公告/司法记录分配全局唯一Source_ID（格式 KIND-PROVIDER-hash10，确定性可幂等）；底稿统一入库云端WeKnora（http://127.0.0.1:8080/api/v1）。
 二、Python功能实现层：①客观硬指标引擎严格按OECD PQI公式计算发明占比、同族规模、4位IPC广度、授权周期、发明人留存率，行业同期群归一化+缺失值动态调权；②漏斗式抽样与硬排雷：统计规则抓"突击申请/发明人断层/专利无效"红灯，按价值筛Top5-8核心专利+Top10中标公告喂下游Agent，省80% Token；③校验熔断与总分汇总：Pydantic强校验Agent返回JSON，核查每条结论绑定的Source_ID真实存在于原始数据包（伪造则拦截重试），按权重算综合信用分=客观硬指标分+语义研判分+风险扣分/一票否决（稳定性+经济性）。
 三、Agent层拆4个职责单一Skill（只接收Python喂的精简上下文，严格按预设量表输出结构化JSON）：①专利技术研判：G-Eval思维链+4档Rubric，读Top-K核心专利独权与摘要，判技术路线壁垒与创新高度；②商业化对齐：对比核心专利技术领域与招投标中标正文，判断中标项目是否真实依赖核心专利技术，识别挂羊头卖狗肉的贸易型订单；③反包装核查：FActScore范式把官网/新闻稿拆原子声明，逐条比对公开专利与中标记录，输出True/False+Source_ID；④银行报告生成：消费校验通过的硬指标、语义分和红黄灯，用银行审贷语言生成《技术信用画像摘要》+《下户访谈问题清单》。
 四、UI展示：客户经理输入企业全称或统一社会信用代码+选细分赛道（半导体设备/工业机器人/生物医药等）匹配行业基准线；页面呈现四维评估结果、风险红黄绿灯、可点击溯源的证据链条；一键生成可直接粘贴进银行《授信尽职调查报告》的技术评估章节+下户访谈针对性核查问题清单。
-环境事实：智慧芽MCP Key在服务器~/.patsnap_mcp_key（Bearer直连connect.zhihuiya.com/1458a4/mcp全球专利库、/f176d7/mcp查新FTO）；元典企业/司法API桥接脚本/root/.hermes/profiles/hermsm2/mcp_servers/yuandian_company_mcp.py（open.chineselaw.com，覆盖工商/专利/涉诉文书/失信/被执行/行政处罚/股权冻结等，无中标公告工具）；天眼查凭证暂缺；WeKnora正在/root/weknora重新部署（后端8080暂未启动，配置在/root/weknora-mcp/weknora-mcp.env）；tdai记忆MCP公网端点https://fatebuddy.asia/tdai-memory-mcp/mcp，本项目记忆会话session_id=techcredit-competition。
+环境说明（公开版）：本项目所需的数据源凭证（天眼查、智慧芽、剑鱼、企查查等）均通过环境变量或本地密钥文件注入，不随代码分发；仓库内 *.example 文件为脱敏模板。WeKnora 为本地 RAG 底座，默认监听 127.0.0.1:8080。
