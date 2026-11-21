@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """techcredit 引擎 CLI（Python功能实现层入口）。
 
-用法（火山云 /root/projects/techcredit/engine/ 下）：
+用法（在云端服务器的项目 engine/ 目录下）：
   python3 run_engine.py --company 91350900587527783P --domain 新能源与节能 --stage 稳定期
       # 跑：OECD PQI + 创新积分2.0 + 硬排雷 + 漏斗抽样 → 生成4个Skill上下文包
   python3 run_engine.py ... --finance-file finance.json --bonus-file bonus.json

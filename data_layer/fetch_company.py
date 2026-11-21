@@ -17,7 +17,7 @@
   - Tavily/Firecrawl：官网/新闻稿全文（WEB，反包装核查素材）
   - 元典：默认停用；企查查：占位（无凭证）
 
-用法（在火山云服务器上）：
+用法（在云端服务器上）：
   # 前期筛选·贵数据复查（默认：只进暂存区，不入正式 SQL/RAG）
   python3 fetch_company.py --name "北京北方华创微电子装备有限公司" --bid-limit 5
   # 客户明确要求入库后，才加 --ingest（暂存数据提升落库 + 入 WeKnora RAG）

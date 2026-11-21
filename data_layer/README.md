@@ -1,6 +1,6 @@
 # techcredit 数据层（比赛项目：企业技术信用评估系统）
 
-部署位置：**火山云服务器** `/root/projects/techcredit/data_layer/`（明确不碰本地服务器）。
+部署位置：云端服务器的项目 `data_layer/` 目录（数据层与本地开发环境隔离）。
 仅依赖 Python 标准库，`/usr/bin/python3` 可直接运行。
 
 ## 架构
