@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>一画 · 账户与接入码</title>
+<style>
+:root{--glass:linear-gradient(165deg,rgba(17,29,47,.72),rgba(7,13,24,.78));--edge:rgba(255,255,255,.16);--cyan:#38bdf8;--txt:#eef5fc;--dim:#a7bccf}
+*{box-sizing:border-box;margin:0;padding:0}
+@font-face{font-family:Yihua;src:url(fonts/yihua-500.woff2?v=2) format('woff2');font-weight:500}
+html,body{min-height:100%}
+body{background:#000 url(earth_still.jpg) 62% 70%/cover fixed;color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;background:linear-gradient(180deg,rgba(4,11,21,.42),rgba(2,8,16,.54));pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:44px 16px 64px;gap:20px}
+.brand{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.brand-line{font-family:Yihua;font-weight:500;letter-spacing:.06em;color:rgba(224,238,251,.95);font-size:13px;text-shadow:0 1px 12px rgba(0,0,0,.6)}
+.wm{width:clamp(180px,32vw,280px);display:block;filter:drop-shadow(0 2px 18px rgba(0,0,0,.55))}
+.slogan{font-family:Yihua;font-weight:500;font-size:15px;color:rgba(220,234,248,.82);letter-spacing:.04em;text-shadow:0 1px 10px rgba(0,0,0,.55)}
+.shell{width:min(1060px,100%);margin-top:26px}
+/* ── 玻璃卡片（一画原有质感） ── */
+.card{background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(1.35);backdrop-filter:blur(20px) saturate(1.35);border:1px solid var(--edge);border-radius:20px;padding:22px 24px;box-shadow:0 24px 60px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.07)}
+.authcard{width:min(480px,100%);margin:0 auto}
+.tabs{display:flex;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);padding:4px;border-radius:999px;margin-bottom:18px}
+.tab{flex:1;text-align:center;padding:9px 0;border-radius:999px;cursor:pointer;color:var(--dim);font-size:14px;user-select:none;transition:.2s}
+.tab.on{background:rgba(56,189,248,.26);color:#dcf3ff;box-shadow:inset 0 0 14px rgba(56,189,248,.15)}
+.fld{margin-bottom:14px}
+.fld label{display:block;font-size:12px;color:var(--dim);margin-bottom:6px;letter-spacing:.02em}
+.inp{width:100%;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.17);border-radius:12px;padding:11px 14px;color:#f2f8ff;font-size:14px;outline:none;font-family:inherit}
+.inp:focus{border-color:rgba(56,189,248,.65);background:rgba(0,0,0,.45);box-shadow:0 0 0 3px rgba(56,189,248,.12)}
+.inp::placeholder{color:rgba(167,188,207,.45)}
+.hbox{display:flex;gap:8px}
+.hbox .inp{flex:1}
+.btn{border:none;border-radius:999px;padding:11px 18px;font-size:14px;cursor:pointer;font-family:inherit;transition:.2s;white-space:nowrap;text-decoration:none;display:inline-block}
+.btn-pri{background:linear-gradient(135deg,#38bdf8,#22d3ee);color:#04121d;font-weight:700}
+.btn-pri:hover{filter:brightness(1.12)}
+.btn-ghost{background:rgba(255,255,255,.04);border:1px solid var(--edge);color:#d9e9f8}
+.btn-ghost:hover{border-color:rgba(56,189,248,.55);color:#bae6fd}
+.btn-wide{width:100%;padding:12px;font-size:15px;margin-top:4px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.mini{padding:6px 12px;font-size:12px}
+.linklike{background:none;border:none;color:#7dd3fc;font-size:13px;cursor:pointer;font-family:inherit;padding:0}
+.linklike:hover{text-decoration:underline}
+.msg{font-size:13px;margin-top:10px;min-height:18px;line-height:1.5}
+.msg.err{color:#f87171}
+.msg.ok{color:#6ee7b7}
+/* ── 登录后双栏（借鉴 FateBuddy：左账户卡 / 右 MCP 配置与指引） ── */
+.grid{display:grid;grid-template-columns:370px minmax(0,1fr);gap:20px;align-items:start}
+.phead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.phead b{font-size:15px;color:var(--txt)}
+.phead .who{font-size:13px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sep{height:1px;background:rgba(255,255,255,.1);margin:4px 0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.row:last-of-type{border-bottom:none}
+.row.last{border-bottom:none}
+.row .k{font-size:13px;color:var(--dim);flex-shrink:0}
+.row .v{font-size:13px;color:var(--txt);text-align:right;overflow-wrap:anywhere;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:0 6px}
+.num{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:17px;font-weight:700;color:#7dd3fc}
+.logout{padding:12px 0 2px}
+.mcpcol{display:flex;flex-direction:column;gap:14px;min-width:0}
+.intro{font-size:13px;color:var(--dim);line-height:1.7}
+.cfghead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;font-size:12.5px;color:var(--dim)}
+.endpoint{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim);margin-bottom:10px}
+.endpoint .val{flex:1;min-width:0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:#bae6fd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+pre.cfg{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:14px;font-size:11.5px;line-height:1.65;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#cde9ff;max-height:300px}
+pre.cfg .jk{color:#7dd3fc}
+pre.cfg .js{color:#6ee7b7}
+pre.cfg .jn{color:#bae6fd}
+.tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.tools span{font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.28);color:#bae6fd;border-radius:999px;padding:3px 10px}
+.steps{list-style:none;counter-reset:s}
+.steps li{counter-increment:s;position:relative;padding:0 0 16px 36px;font-size:13px;color:var(--dim);line-height:1.85}
+.steps li:last-child{padding-bottom:2px}
+.steps li::before{content:counter(s);position:absolute;left:0;top:3px;width:22px;height:22px;border-radius:50%;background:rgba(56,189,248,.16);border:1px solid rgba(56,189,248,.4);color:#7dd3fc;font-size:12px;display:flex;align-items:center;justify-content:center}
+.steps b{color:#bae6fd;font-weight:600}
+.clients{margin-top:6px;font-size:12.5px;line-height:1.8}
+.manual{margin-top:6px;font-size:12px;color:rgba(167,188,207,.8);line-height:1.7}
+.egs{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.eg{background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.22);border-radius:10px;padding:8px 12px;font-size:12.5px;color:#bae6fd}
+.eg::before{content:"▸ ";color:#38bdf8}
+.note{font-size:12px;color:rgba(167,188,207,.72);line-height:1.7}
+/* ── 项目协作卡（账户卡下方，团队底稿协同入口） ── */
+.leftcol{display:flex;flex-direction:column;gap:20px;min-width:0}
+.prj{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);border-radius:14px;padding:12px 14px;margin-top:10px}
+.prj-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.prj-name{font-size:13.5px;font-weight:600;color:var(--txt);overflow-wrap:anywhere;min-width:0}
+.badge{font-size:10.5px;border-radius:999px;padding:2px 8px;flex-shrink:0;white-space:nowrap}
+.badge.owner{background:rgba(56,189,248,.16);border:1px solid rgba(56,189,248,.4);color:#7dd3fc}
+.badge.member{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);color:var(--dim)}
+.prj-co{font-size:12px;color:var(--dim);margin-top:4px;overflow-wrap:anywhere}
+.prj-co .ck{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;opacity:.7;font-size:11px}
+.prj-meta{font-size:12px;color:var(--dim);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.prj-meta .code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#bae6fd}
+.prj-acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.prj-detail{margin-top:10px;border-top:1px dashed rgba(255,255,255,.12);padding-top:10px;font-size:12px;color:var(--dim);line-height:1.8}
+.prj-detail b{color:#bae6fd;font-weight:600;font-size:12px}
+.src{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.src:last-child{border-bottom:none}
+.src .t{color:#cde9ff;overflow-wrap:anywhere;min-width:0}
+.src .s{flex-shrink:0;font-size:11px;color:var(--dim);white-space:nowrap}
+.prj-empty{font-size:12.5px;color:var(--dim);line-height:1.8;padding:10px 0 2px}
+.prj-toggles{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(80px);background:rgba(8,22,36,.92);border:1px solid rgba(56,189,248,.4);color:#bae6fd;font-size:13px;padding:10px 20px;border-radius:999px;transition:transform .3s;z-index:99;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+#panel,#auth{display:none}
+#panel.show,#auth.show{display:block}
+.hide{display:none!important}
+@media(max-width:920px){.grid{grid-template-columns:1fr}.shell{margin-top:18px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="brand-line">◉ 落笔一画，创新有价</div>
+    <img class="wm" src="yihua-title.png?v=3" alt="一画">
+    <div class="slogan">一画，让技术，成为信用</div>
+  </div>
+
+  <div class="shell">
+    <!-- ═══ 未登录 ═══ -->
+    <div id="auth" class="card authcard show">
+      <div class="tabs">
+        <div class="tab on" id="tabLogin">登录</div>
+        <div class="tab" id="tabReg">注册</div>
+      </div>
+
+      <!-- 登录 · 密码 -->
+      <div id="loginPwd">
+        <div class="fld"><label>邮箱</label><input class="inp" id="lpEmail" type="email" placeholder="name@example.com" autocomplete="username"></div>
+        <div class="fld"><label>密码</label><input class="inp" id="lpPwd" type="password" placeholder="登录密码" autocomplete="current-password"></div>
+        <button class="btn btn-pri btn-wide" id="lpGo">登录</button>
+        <div class="msg" id="lpMsg"></div>
+        <div style="text-align:center;margin-top:2px"><button class="linklike" id="toCodeLogin">用邮箱验证码登录</button></div>
+      </div>
+
+      <!-- 登录 · 验证码 -->
+      <div id="loginCode" class="hide">
+        <div class="fld"><label>邮箱（已注册）</label><input class="inp" id="lcEmail" type="email" placeholder="name@example.com"></div>
+        <div class="fld"><div class="hbox"><input class="inp" id="lcCode" placeholder="邮箱收到的验证码" maxlength="12"><button class="btn btn-ghost" id="lcSend">发送验证码</button></div></div>
+        <button class="btn btn-pri btn-wide" id="lcGo">登录</button>
+        <div class="msg" id="lcMsg"></div>
+        <div style="text-align:center;margin-top:2px"><button class="linklike" id="toPwdLogin">用密码登录</button></div>
+      </div>
+
+      <!-- 注册 -->
+      <div id="regBox" class="hide">
+        <div class="fld"><label>邮箱（接收验证码）</label><div class="hbox"><input class="inp" id="rgEmail" type="email" placeholder="name@example.com"><button class="btn btn-ghost" id="rgSend">发送验证码</button></div></div>
+        <div class="fld"><label>验证码</label><input class="inp" id="rgCode" placeholder="邮箱收到的验证码" maxlength="12"></div>
+        <div class="fld"><label>密码（至少8位，需含字母和数字）</label><input class="inp" id="rgPwd" type="password" placeholder="设置登录密码" autocomplete="new-password"></div>
+        <button class="btn btn-pri btn-wide" id="rgGo">注册并登录</button>
+        <div class="msg" id="rgMsg"></div>
+      </div>
+    </div>
+
+    <!-- ═══ 已登录：左账户卡 + 右 MCP 配置/指引 ═══ -->
+    <div id="panel">
+      <div class="grid">
+        <div class="leftcol">
+        <div class="card acct">
+          <div class="phead"><b>当前账户</b><span class="who" id="whoEmail"></span></div>
+          <div class="sep"></div>
+          <div class="row"><span class="k">今日已领取</span><span class="v"><b class="num" id="kvToday">–</b><button class="btn btn-pri mini" id="btnClaim" style="margin-left:8px">领取今日额度</button></span></div>
+          <div class="row"><span class="k">剩余调用次数</span><span class="v"><b class="num" id="kvRem">–</b><span id="remUnit">&nbsp;次</span></span></div>
+          <div class="row"><span class="k">接入码</span><span class="v"><span id="kvKey">–</span><button class="btn btn-ghost mini" id="btnShowKey">显示</button><button class="btn btn-ghost mini" id="btnCopyKey">复制</button></span></div>
+          <div class="row last"><span class="k">有效期至</span><span class="v" id="kvExp">–</span></div>
+          <div class="msg" id="pnMsg"></div>
+          <div class="sep"></div>
+          <div class="logout"><button class="linklike" id="btnLogout">退出登录</button></div>
+        </div>
+
+        <div class="card prjcard">
+          <div class="phead"><b>项目协作</b><span style="display:flex;gap:14px;align-items:center"><a class="linklike" href="/techcredit/api/weknora-sso" target="_blank" rel="noopener" title="用一画账号自动登录 WeKnora，直达知识库管理">WeKnora 管理底稿 ↗</a><button class="linklike" id="prjRefresh">刷新</button></span></div>
+          <div class="note">建项目 → 发邀请码 → 同事加入 → 底稿与共享记忆项目内互通，跨项目隔离。</div>
+          <div id="prjList"><div class="prj-empty">加载中…</div></div>
+          <div class="prj-toggles">
+            <button class="btn btn-ghost mini" id="prjToggleCreate">＋ 创建项目</button>
+            <button class="btn btn-ghost mini" id="prjToggleJoin">凭邀请码加入</button>
+          </div>
+          <div id="prjCreate" class="hide" style="margin-top:12px">
+            <div class="fld"><label>项目名称</label><input class="inp" id="pcName" placeholder="如：某企业技术信用认证"></div>
+            <div class="fld"><label>统一社会信用代码（18位 USCC）</label><input class="inp" id="pcKey" maxlength="18" placeholder="91110108MA01XXXXXX" style="text-transform:uppercase"></div>
+            <div class="fld"><label>企业名称（选填）</label><input class="inp" id="pcCo" placeholder="企业全称"></div>
+            <button class="btn btn-pri btn-wide" id="pcGo">创建并生成邀请码</button>
+            <div class="msg" id="pcMsg"></div>
+          </div>
+          <div id="prjJoin" class="hide" style="margin-top:12px">
+            <div class="fld"><label>邀请码</label><div class="hbox"><input class="inp" id="pjCode" placeholder="tc-xxxxxxxx"><button class="btn btn-ghost" id="pjGo">加入</button></div></div>
+            <div class="msg" id="pjMsg"></div>
+          </div>
+        </div>
+        </div>
+
+        <div class="mcpcol">
+          <div class="intro">在客户端里添加以下 MCP 服务器（豆包工作版 / Claude / Cursor 等通用）：</div>
+          <div class="card cfgcard">
+            <div class="cfghead"><span>MCP 配置（已含接入码）</span><button class="btn btn-ghost mini" id="btnCopyCfg">复制配置</button></div>
+            <div class="endpoint"><span>端点</span><span class="val" id="kvUrl">–</span><button class="btn btn-ghost mini" id="btnCopyUrl">复制</button></div>
+            <pre class="cfg" id="cfgPre">加载中…</pre>
+            <div class="tools" id="toolBox"></div>
+          </div>
+          <div class="card guidecard">
+            <ol class="steps">
+              <li>点击<b>复制配置</b>，拿到完整 JSON（含端点与 Bearer 接入码）。</li>
+              <li>打开你的 AI 客户端，找到 MCP / 连接器配置项，粘贴刚才复制的 JSON。
+                <div class="clients"><b>豆包工作版</b>：设置 → 连接器 → 自定义 MCP，粘贴即可；<b>Claude Desktop</b>：编辑 claude_desktop_config.json；<b>Cursor</b>：Settings → MCP → Add Server。</div>
+                <div class="manual">若客户端只能手填：类型选 <b>streamable-http</b>，URL 填端点，请求头加 <b>Authorization: Bearer 接入码</b>。</div>
+              </li>
+              <li>回到对话，像下面这样直接提问，Agent 就会自动调用一画分析工具（当前 <b id="toolCount">…</b> 个）：
+                <div class="egs">
+                  <div class="eg">帮我分析宁德时代的技术信用与专利质量</div>
+                  <div class="eg">筛选新能源领域有科创板申报潜力的企业</div>
+                </div>
+              </li>
+            </ol>
+          </div>
+          <div class="note">接入码即你的账户凭证，请勿公开分享。</div>
+          <div class="note" id="cfgNote"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const J=async(u,o)=>{const r=await fetch(u,Object.assign({credentials:'include'},o));let d={};try{d=await r.json()}catch(e){}return Object.assign({status:r.status},d)};
+let ME=null,CFG=null,KEY='',REM=null,TRI={},PRJ=[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2200)}
+function msg(id,t,ok){const e=$(id);e.textContent=t||'';e.className='msg'+(t?(ok?' ok':' err'):'')}
+async function copy(t){try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove()}toast('已复制')}
+/* JSON 语法高亮：键青色 / 字符串值绿色（沿用一画配色） */
+function hl(obj){
+  const s=JSON.stringify(obj,null,2);
+  return s.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,m=>{
+    let cls='jn';
+    if(/^"/.test(m))cls=/:$/.test(m)?'jk':'js';
+    return '<span class="'+cls+'">'+esc(m)+'</span>';
+  });
+}
+
+/* ── Tab 切换 ── */
+function showAuth(){ $('auth').classList.add('show');$('panel').classList.remove('show') }
+function showPanel(){ $('auth').classList.remove('show');$('panel').classList.add('show') }
+$('tabLogin').onclick=()=>switchTab('login');
+$('tabReg').onclick=()=>switchTab('reg');
+function switchTab(t){
+  $('tabLogin').classList.toggle('on',t==='login');
+  $('tabReg').classList.toggle('on',t==='reg');
+  $('loginPwd').classList.toggle('hide',t!=='login'||CODEMODE);
+  $('loginCode').classList.toggle('hide',t!=='login'||!CODEMODE);
+  $('regBox').classList.toggle('hide',t!=='reg');
+}
+let CODEMODE=false;
+$('toCodeLogin').onclick=()=>{CODEMODE=true;switchTab('login');$('lcEmail').value=$('lpEmail').value;msg('lcMsg','')};
+$('toPwdLogin').onclick=()=>{CODEMODE=false;switchTab('login');$('lpEmail').value=$('lcEmail').value;msg('lpMsg','')};
+
+/* ── 发码按钮 60s 冷却 ── */
+function cooldown(btn){let s=60;btn.disabled=true;const t=btn.textContent;btn.textContent=s+'s';
+  const iv=setInterval(()=>{s--;if(s<=0){clearInterval(iv);btn.disabled=false;btn.textContent=t}else btn.textContent=s+'s'},1000)}
+
+/* ── 登录（密码） ── */
+$('lpGo').onclick=async()=>{
+  const email=$('lpEmail').value.trim(),pwd=$('lpPwd').value;
+  if(!email||!pwd)return msg('lpMsg','请输入邮箱与密码');
+  msg('lpMsg','登录中…');
+  const d=await J('/api/signin/password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pwd})});
+  if(d.ok){toast('登录成功');boot(true)}
+  else if(d.no_password){msg('lpMsg','该账户尚未设置密码，请改用邮箱验证码登录');CODEMODE=true;switchTab('login');$('lcEmail').value=email}
+  else msg('lpMsg',d.error||'登录失败，请检查邮箱与密码');
+};
+
+/* ── 登录（验证码） ── */
+$('lcSend').onclick=async()=>{
+  const email=$('lcEmail').value.trim();if(!email)return msg('lcMsg','请输入邮箱');
+  msg('lcMsg','发送中…');
+  const d=await J('/api/signin/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+  if(d.ok){msg('lcMsg','验证码已发送到 '+email+'，请查收（含垃圾箱）',1);cooldown($('lcSend'))}
+  else msg('lcMsg',d.error||'发送失败，请稍后再试');
+};
+$('lcGo').onclick=async()=>{
+  const email=$('lcEmail').value.trim(),code=$('lcCode').value.trim();
+  if(!email||!code)return msg('lcMsg','请输入邮箱与验证码');
+  const d=await J('/api/signin/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,code})});
+  if(d.ok){toast('登录成功');boot(true)}
+  else msg('lcMsg',d.error||'验证失败');
+};
+
+/* ── 注册 ── */
+$('rgSend').onclick=async()=>{
+  const email=$('rgEmail').value.trim();if(!email)return msg('rgMsg','请输入邮箱');
+  msg('rgMsg','发送中…');
+  const d=await J('/api/signup/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+  if(d.ok){msg('rgMsg',(d.existing?'该邮箱已注册，验证码已发送，验证后将直接登录':'验证码已发送到 '+(d.send_to||email)+'，请查收（含垃圾箱）'),1);cooldown($('rgSend'))}
+  else msg('rgMsg',d.error||'发送失败，请稍后再试');
+};
+$('rgGo').onclick=async()=>{
+  const email=$('rgEmail').value.trim(),code=$('rgCode').value.trim(),pwd=$('rgPwd').value;
+  if(!email||!code||!pwd)return msg('rgMsg','请填写邮箱、验证码与密码');
+  msg('rgMsg','注册中…');
+  const d=await J('/api/signup/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,code,password:pwd})});
+  if(d.ok){toast('注册成功，接入码已签发');boot(true)}
+  else msg('rgMsg',d.error||'注册失败');
+};
+
+/* ── 额度渲染与每日领取 ── */
+function paintRem(){
+  const un=REM!=null&&REM<0;
+  $('kvRem').textContent=un?'无限':(REM!=null?REM:'–');
+  $('remUnit').style.display=un?'none':'';
+}
+function paintExp(e){$('kvExp').textContent=e?String(e).slice(0,10):'长期'}
+function paintClaim(){
+  const b=$('btnClaim');
+  if(TRI.unlimited){b.disabled=true;b.className='btn btn-ghost mini';b.textContent='不限次账户';$('kvToday').textContent='–'}
+  else if(TRI.claimed_today){b.disabled=true;b.className='btn btn-ghost mini';b.textContent='今日已领取';$('kvToday').textContent=(TRI.daily||0)+' 次'}
+  else{b.disabled=false;b.className='btn btn-pri mini';b.textContent='领取今日 '+(TRI.daily||10)+' 次';$('kvToday').textContent='0 次'}
+}
+$('btnClaim').onclick=async()=>{
+  const d=await J('/api/trial/claim',{method:'POST'});
+  if(d.ok){REM=d.remaining;TRI.claimed_today=true;paintRem();paintClaim();msg('pnMsg',d.message||('已领取，剩余 '+d.remaining+' 次'),1);toast('领取成功')}
+  else if(d.status===409){if(d.claimed_today){TRI.claimed_today=true;paintClaim()}msg('pnMsg',d.message||'今日已领取，明日再来',1);toast(d.message||'今日已领取')}
+  else msg('pnMsg',d.error||d.message||'领取失败，稍后再试');
+  if(!CFG)await loadCfg();   // 403 后重试
+};
+
+/* ── 接入码显隐/复制 ── */
+let KEYSHOWN=false;
+$('btnShowKey').onclick=()=>{KEYSHOWN=!KEYSHOWN;paintKey();$('btnShowKey').textContent=KEYSHOWN?'隐藏':'显示'};
+function paintKey(){$('kvKey').textContent=KEY?(KEYSHOWN?KEY:(KEY.slice(0,4)+'••••••••'+KEY.slice(-4))):'–'}
+$('btnCopyKey').onclick=()=>KEY?copy(KEY):toast('暂无接入码');
+$('btnCopyUrl').onclick=()=>CFG&&CFG.url?copy(CFG.url):toast('暂无端点');
+$('btnCopyCfg').onclick=()=>CFG&&CFG.config?copy(JSON.stringify(CFG.config,null,2)):toast('暂无配置');
+
+/* ── 退出 ── */
+$('btnLogout').onclick=async()=>{await J('/api/logout',{method:'POST'});ME=null;CFG=null;KEY='';REM=null;TRI={};PRJ=[];paintProjects();toast('已退出');boot(true)};
+
+/* ── 项目协作：列表 / 创建 / 邀请码加入 / 成员与底稿 ── */
+const WK={uploaded:'已入库',pending:'处理中',failed:'入库失败'};
+function paintProjects(){
+  const box=$('prjList');
+  if(!PRJ.length){box.innerHTML='<div class="prj-empty">还没有项目。创建一个项目，或用邀请码加入团队项目；同项目成员的 Agent 凭各自接入码即可共享底稿知识库与共享记忆。</div>';return}
+  box.innerHTML=PRJ.map(p=>{
+    const role=p.role==='owner'?'<span class="badge owner">负责人</span>':'<span class="badge member">成员</span>';
+    const co=esc(p.company_name||p.company_key)+(p.company_name?' <span class="ck">'+esc(p.company_key)+'</span>':'');
+    return '<div class="prj">'
+      +'<div class="prj-head"><span class="prj-name">'+esc(p.name)+'</span>'+role+'</div>'
+      +'<div class="prj-co">'+co+'</div>'
+      +'<div class="prj-meta"><span>成员 '+((p.members||[]).length)+'</span><span>底稿 '+(p.n_sources||0)+'</span><span class="code">'+esc(p.invite_code)+'</span></div>'
+      +'<div class="prj-acts"><button class="btn btn-ghost mini" data-copy="'+esc(p.invite_code)+'">复制邀请码</button><button class="btn btn-ghost mini" data-detail="'+esc(p.project_id)+'">成员与底稿</button></div>'
+      +'<div class="prj-detail hide" id="det-'+esc(p.project_id)+'"></div></div>';
+  }).join('');
+  box.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>copy(b.getAttribute('data-copy')));
+  box.querySelectorAll('[data-detail]').forEach(b=>b.onclick=()=>toggleDetail(b.getAttribute('data-detail'),b));
+}
+async function loadProjects(){
+  const d=await J('/techcredit/api/projects');
+  if(d.ok){PRJ=d.projects||[];paintProjects()}
+  else $('prjList').innerHTML='<div class="prj-empty">项目加载失败：'+esc(d.detail||d.error||('HTTP '+d.status))+'</div>';
+}
+async function toggleDetail(pid,btn){
+  const el=$('det-'+pid);if(!el)return;
+  if(!el.classList.contains('hide')){el.classList.add('hide');btn.textContent='成员与底稿';return}
+  el.classList.remove('hide');btn.textContent='收起';el.innerHTML='加载中…';
+  const d=await J('/techcredit/api/projects/'+encodeURIComponent(pid)+'/sources');
+  if(!d.ok){el.innerHTML='加载失败：'+esc(d.detail||d.error||('HTTP '+d.status));return}
+  const ms=(d.members||[]).map(m=>'<div class="src"><span class="t">'+esc(m.email)+'</span><span class="s">'+(m.role==='owner'?'负责人':'成员')+'</span></div>').join('');
+  const ups=(d.uploads||[]).map(u=>'<div class="src"><span class="t">'+esc(u.title||u.source_id)+'</span><span class="s">'+esc(u.kind||'')+(u.weknora_status?' · '+esc(WK[u.weknora_status]||u.weknora_status):'')+'</span></div>').join('')||'<div>暂无上传底稿，可在客户端经协作 MCP 的 upload_dossier 上传。</div>';
+  const pub=(d.public_sources||[]).map(g=>esc(g.kind)+'×'+esc(g.c)).join('，');
+  el.innerHTML='<b>成员</b>'+ms+'<div style="height:8px"></div><b>项目底稿</b>'+ups
+    +(pub?'<div style="margin-top:8px">平台公共数据：'+pub+'</div>':'')
+    +'<div style="margin-top:8px">WeKnora 知识库：<span style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#bae6fd">'+esc('techcredit-prj-'+pid)+'</span> · <a class="linklike" href="/techcredit/api/weknora-sso?project='+encodeURIComponent(pid)+'" target="_blank" rel="noopener">去管理 ↗</a></div>';
+}
+$('prjRefresh').onclick=()=>loadProjects();
+$('prjToggleCreate').onclick=()=>{$('prjCreate').classList.toggle('hide');$('prjJoin').classList.add('hide');msg('pcMsg','')};
+$('prjToggleJoin').onclick=()=>{$('prjJoin').classList.toggle('hide');$('prjCreate').classList.add('hide');msg('pjMsg','')};
+$('pcKey').addEventListener('input',()=>{$('pcKey').value=$('pcKey').value.toUpperCase()});
+$('pcGo').onclick=async()=>{
+  const name=$('pcName').value.trim(),key=$('pcKey').value.trim().toUpperCase(),co=$('pcCo').value.trim();
+  if(!name)return msg('pcMsg','请填写项目名称');
+  if(!/^[0-9A-Z]{18}$/.test(key))return msg('pcMsg','USCC 应为18位统一社会信用代码');
+  msg('pcMsg','创建中…');
+  const d=await J('/techcredit/api/projects',{method:'POST',body:new URLSearchParams({name,company_key:key,company_name:co})});
+  if(d.ok){msg('pcMsg','');$('prjCreate').classList.add('hide');$('pcName').value='';$('pcKey').value='';$('pcCo').value='';
+    await loadProjects();
+    if(d.project&&d.project.invite_code){await copy(d.project.invite_code);toast('项目已创建，邀请码已复制')}else toast('项目已创建')}
+  else msg('pcMsg',d.detail||d.error||'创建失败');
+};
+$('pjGo').onclick=async()=>{
+  const code=$('pjCode').value.trim();if(!code)return msg('pjMsg','请输入邀请码');
+  msg('pjMsg','加入中…');
+  const d=await J('/techcredit/api/projects/join',{method:'POST',body:new URLSearchParams({invite_code:code})});
+  if(d.ok){msg('pjMsg','');$('prjJoin').classList.add('hide');$('pjCode').value='';await loadProjects();toast('已加入项目')}
+  else msg('pjMsg',d.detail||d.error||'加入失败');
+};
+$('pjCode').addEventListener('keydown',e=>{if(e.key==='Enter')$('pjGo').click()});
+
+/* ── 数据加载与渲染 ── */
+async function loadCfg(){
+  const c=await J('/techcredit/api/mcp-config');
+  if(c.status===200&&c.config){CFG=c;KEY=c.token||'';
+    $('kvUrl').textContent=c.url||'–';
+    $('cfgPre').innerHTML=hl(c.config);
+    const ts=c.tools||[];
+    $('toolCount').textContent=ts.length;
+    $('toolBox').innerHTML=ts.map(t=>'<span>'+esc(typeof t==='string'?t:(t.name||JSON.stringify(t)))+'</span>').join('');
+    $('cfgNote').textContent=c.note||'';
+    paintKey();
+  }else{
+    $('kvUrl').textContent='–';$('cfgPre').textContent='暂无有效接入码，请先领取额度（或登录 fatebuddy.asia/account）';
+    $('toolCount').textContent='–';
+    $('cfgNote').textContent=(c.error||c.note||'');
+  }
+}
+async function boot(reload){
+  const me=await J('/techcredit/api/auth/me');
+  if(me.logged_in){
+    ME=me;showPanel();
+    $('whoEmail').textContent=me.email||'';
+    REM=me.remaining;TRI=me.trial||{};
+    paintRem();paintExp(me.expires_at);paintClaim();
+    if(!KEY)KEY=me.key||'';
+    if(!CFG||reload)await loadCfg();
+    paintKey();
+    loadProjects();
+  }else{ME=null;showAuth();switchTab('login')}
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'){
+  if(!$('auth').classList.contains('show'))return;
+  if(!$('regBox').classList.contains('hide'))$('rgGo').click();
+  else if(CODEMODE)$('lcGo').click();
+  else $('lpGo').click();
+}});
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>底稿分析工作台 · 企业技术信用评估</title>
+<style>
+:root{
+  --bg:#0a1120; --panel:#101b31; --panel2:#0d1729; --line:#1e3252;
+  --txt:#dbe7f5; --sub:#8aa2c0; --dim:#5c7392;
+  --cyan:#38bdf8; --gold:#fbbf24; --green:#34d399; --red:#f87171; --yellow:#facc15;
+  --A:#fbbf24; --B:#22d3ee; --C:#60a5fa; --D:#64748b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:14px}
+a{color:var(--cyan);text-decoration:none}
+header{display:flex;align-items:center;gap:18px;padding:14px 22px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0e1a30,#0a1120);flex-wrap:wrap}
+header h1{font-size:18px;font-weight:700;letter-spacing:.5px}
+header .sub{color:var(--sub);font-size:12px}
+button{cursor:pointer;font-family:inherit}
+.btn{background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;border:none;border-radius:9px;padding:9px 18px;font-size:13px;font-weight:600;transition:.15s}
+.btn:hover{filter:brightness(1.15)}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--sub);font-weight:400}
+.btn.ghost:hover{color:var(--txt);border-color:var(--cyan)}
+.tag{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:11px;color:var(--sub)}
+.tag.hl{color:var(--cyan);border-color:#2e5b8a}
+main{display:grid;grid-template-columns:420px 1fr;gap:14px;padding:14px 22px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.panel .phead{padding:10px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub)}
+.panel .pbody{padding:14px 16px}
+label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
+input,select{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px 10px;font-size:13px;outline:none}
+input:focus,select:focus{border-color:var(--cyan)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#drop{border:2px dashed #2e5b8a;border-radius:12px;padding:22px 12px;text-align:center;color:var(--sub);font-size:12px;transition:.15s;margin-top:12px}
+#drop.over{border-color:var(--cyan);background:#0d1f38}
+#drop b{color:var(--txt)}
+#filelist{margin-top:8px}
+.fitem{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:12px}
+.fitem .fname{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fitem select{width:110px;padding:4px 6px;font-size:11px}
+.fitem button{background:none;border:none;color:var(--dim);font-size:15px}
+.note{font-size:11px;color:var(--dim);line-height:1.6}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px}
+.kv .k{color:var(--dim)}
+.sid{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--green);word-break:break-all}
+.lock{background:var(--panel2);border:1px dashed #2e5b8a;border-radius:12px;padding:14px}
+.scorecard{display:flex;gap:10px;margin-bottom:12px}
+.scorecard .big{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.scorecard .big b{display:block;font-size:22px}
+.scorecard .big span{font-size:11px;color:var(--sub)}
+table.mt{width:100%;border-collapse:collapse;font-size:12px}
+table.mt th{color:var(--dim);font-weight:400;text-align:left;padding:5px 6px;border-bottom:1px solid var(--line)}
+table.mt td{padding:6px;border-bottom:1px solid #14233d}
+table.mt td.num{text-align:right;font-variant-numeric:tabular-nums}
+.flag{display:inline-flex;align-items:center;gap:6px;border-radius:8px;padding:5px 10px;margin:0 6px 6px 0;font-size:12px;border:1px solid}
+.flag.red{color:var(--red);border-color:#7f2f36;background:#2a1418}
+.flag.yellow{color:var(--yellow);border-color:#7f6a2f;background:#2a2413}
+.fact{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--green);border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:12px;line-height:1.6}
+.fact .fmeta{font-size:11px;color:var(--dim);margin-bottom:3px}
+.fact .fmeta .sid{margin-right:8px}
+.pat{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 12px;margin-bottom:6px;font-size:12px}
+.grade{font-weight:700}
+.grade.A{color:var(--A)}.grade.B{color:var(--B)}.grade.C{color:var(--C)}.grade.D{color:var(--D)}
+#mcpbox{margin-top:12px}
+.toast{position:fixed;left:50%;bottom:36px;transform:translateX(-50%) translateY(20px);background:#173052;border:1px solid var(--cyan);color:var(--txt);padding:10px 20px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;z-index:99;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.steps{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.step{flex:1;min-width:150px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:11px;color:var(--sub);line-height:1.5}
+.step b{display:block;color:var(--cyan);font-size:12px;margin-bottom:3px}
+.step.done{border-color:#2f6b4f}.step.done b{color:var(--green)}
+.step.doing{border-color:var(--cyan);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 14px rgba(56,189,248,.35)}}
+@media(max-width:980px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>底稿分析工作台 <span style="color:var(--cyan)">· SQLite + WeKnora</span></h1>
+  <span class="sub">上传企业底稿 → 落库溯源 → 知识库检索 → 创新积分2.0引擎</span>
+  <span id="authchip" style="margin-left:auto"></span>
+  <button class="btn ghost" onclick="location.href='/techcredit/'">← 返回地图层</button>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="phead">① 项目团队协同（多 Agent 共享同一项目知识库）</div>
+    <div class="pbody">
+      <div class="note" style="margin-bottom:10px">
+        项目 = 团队 × 企业。项目负责人创建项目后把<b>邀请码</b>发给队友；团队成员各自注册 FateBuddy
+        账号、各领各的 MCP 接入码，不同的 Agent 即可协同调用<b>同一项目</b>的底稿知识库——
+        平台公共数据全员可见，项目内上传底稿仅成员可见，跨项目严格隔离。
+        每个项目自带<b>专属记忆服务＋专属知识库</b>（一个项目一个记忆服务器、一个知识库）：
+        记忆经 project_memory_add / project_memory_search 按项目服务级隔离沉淀，底稿入
+        techcredit-prj-* 专属库与平台公共库合并检索，队友的 Agent 随时协同。
+      </div>
+      <div class="grid2" style="margin-bottom:10px">
+        <div>
+          <label>创建新项目（你即负责人）</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <input id="pjname" placeholder="项目名称，如 XX银行-宁德时代尽调" style="flex:2;min-width:140px">
+            <input id="pjkey" placeholder="18位 USCC" style="flex:1;min-width:110px">
+            <button class="btn" onclick="createProject()">创建</button>
+          </div>
+        </div>
+        <div>
+          <label>凭邀请码加入团队</label>
+          <div style="display:flex;gap:6px">
+            <input id="pjcode" placeholder="tc-xxxxxxxx" style="flex:1">
+            <button class="btn ghost" onclick="joinProject()">加入</button>
+          </div>
+        </div>
+      </div>
+      <div id="pjlist"><div class="note" style="color:var(--dim)">登录后展示我的项目</div></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="phead">② 上传底稿与企业信息（登录后可用）</div>
+    <div class="pbody">
+      <div id="formwrap"></div>
+      <div class="grid2">
+        <div><label>技术领域（创新积分2.0分领域权重）</label><select id="domain"></select></div>
+        <div><label>发展阶段（分阶段权重）</label>
+          <select id="stage"><option>初创期</option><option selected>成长期</option><option>稳定期</option></select></div>
+      </div>
+      <div id="drop">
+        <b>拖拽底稿文件到此处</b>，或点击选择<br>
+        <span style="color:var(--dim)">支持 .md / .txt / .json，每份 ≤2MB，最多 6 份；专利/财务/官网宣传/司法/中标等材料均可</span>
+        <input type="file" id="fpick" multiple accept=".md,.txt,.json,.markdown" style="display:none">
+      </div>
+      <div class="grid2" style="margin-top:10px">
+        <div><label>挂到团队项目（可选：底稿进入团队共享知识库）</label>
+          <select id="prjsel"><option value="">不挂项目（仅平台公共层）</option></select></div>
+        <div style="align-self:end"><span class="note">挂项目后，团队成员的 Agent 凭各自接入码即可检索该底稿</span></div>
+      </div>
+      <div id="filelist"></div>
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <button class="btn" id="goBtn" onclick="doAnalyze()" style="flex:1">开始分析（SQLite 落库 → WeKnora 检索 → 引擎评分）</button>
+      </div>
+      <div class="note" style="margin-top:10px">
+        底稿将按 <span class="sid">PAT-UPL-xxxxxxxxxx</span> 规范生成 Source_ID 落入 SQLite，渲染溯源底稿后推入 WeKnora
+        ——挂项目入该项目<b>专属知识库 techcredit-prj-*</b>（一个项目一个知识库），未挂项目入平台公共库
+        <b>techcredit-dossiers</b>；引擎从 SQLite 取结构化数据、从 WeKnora 混合检索（公共库+项目专属库合并）取事实证据段，产出创新积分2.0正式分。
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="panel" style="margin-bottom:14px">
+      <div class="phead">③ 分析进度</div>
+      <div class="pbody">
+        <div class="steps">
+          <div class="step" id="st1"><b>SQLite 落库</b>Source_ID 溯源登记</div>
+          <div class="step" id="st2"><b>WeKnora 入库</b>底稿切片与向量化</div>
+          <div class="step" id="st3"><b>三层分析</b>事实桥检索+创新积分2.0</div>
+          <div class="step" id="st4"><b>结果产出</b>评分/红黄灯/上下文包</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="phead">④ 分析结果 <span id="runid" class="sid" style="margin-left:8px"></span></div>
+      <div class="pbody" id="result">
+        <div class="note" style="padding:30px 0;text-align:center;color:var(--dim)">上传底稿并点击「开始分析」后，结果在此展示</div>
+      </div>
+    </div>
+    <div class="panel" id="mcpbox" style="display:none">
+      <div class="phead">⑤ 详细分析版 MCP（复制进你自己的 Agent）</div>
+      <div class="pbody" id="mcpbody"></div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<div id="gate" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(10,17,32,.92);backdrop-filter:blur(3px);align-items:center;justify-content:center">
+  <div class="lock" style="max-width:420px;padding:28px 30px;border-radius:16px">
+    <b style="font-size:15px">🔒 底稿分析工作台需登录后使用</b>
+    <div class="note" style="margin:10px 0 14px">注册/登录 FateBuddy 账号后即可上传底稿、领取 MCP 接入码；登录完成后本页自动解锁。</div>
+    <button class="btn" onclick="openAuth('signup')">注册新账号</button>
+    <button class="btn ghost" style="margin-left:8px" onclick="openAuth('signin')">已有账号登录</button>
+    <button class="btn ghost" style="margin:12px 0 0" onclick="location.href='/techcredit/'">← 返回地图层</button>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const GRADE_C={A:'#fbbf24',B:'#22d3ee',C:'#60a5fa',D:'#64748b'};
+let AUTH={logged_in:false},FILES=[],AUTHPOLL=null;
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const KINDS={patent:'专利文件',financial:'财务数据',bid:'中标公告',judicial:'司法记录',company:'工商资料',risk:'风险信息',web:'官网/宣传稿',other:'其他材料'};
+async function jget(u){const r=await fetch(u);if(!r.ok)throw new Error(await r.text());return r.json();}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2400);}
+
+async function loadAuth(){try{AUTH=await jget('api/auth/me');}catch(e){AUTH={logged_in:false};}renderAuth();if(AUTH.logged_in){loadMcp();loadProjects();}}
+function renderAuth(){
+  $('authchip').innerHTML=AUTH.logged_in
+    ?`<span class="tag hl">${esc(AUTH.email)}</span>`
+    :`<button class="btn" style="padding:7px 16px" onclick="openAuth('signin')">登录 / 注册</button>`;
+  const gate=$('gate');
+  if(gate)gate.style.display=AUTH.logged_in?'none':'flex';
+  $('formwrap').innerHTML=AUTH.logged_in?`
+    <div class="grid2">
+      <div><label>统一社会信用代码（USCC）</label><input id="ckey" placeholder="18位，如 91350900587527783P"></div>
+      <div><label>企业名称</label><input id="cname" placeholder="如 宁德时代新能源科技股份有限公司"></div>
+    </div>`
+    :`<div class="lock">
+      <b>🔒 登录后可上传底稿分析</b>
+      <div class="note" style="margin:6px 0 10px">复用 FateBuddy 邮箱注册/登录；注册后还可领取「详细分析版 MCP」接入码，复制进你自己的 Agent 即可调用我们的数据。</div>
+      <button class="btn" onclick="openAuth('signup')">注册新账号</button>
+      <button class="btn ghost" style="margin-left:8px" onclick="openAuth('signin')">已有账号登录</button></div>`;
+}
+function openAuth(kind){
+  window.open('/'+kind,'_blank');
+  if(AUTHPOLL)clearInterval(AUTHPOLL);
+  AUTHPOLL=setInterval(async()=>{try{const a=await jget('api/auth/me');
+    if(a.logged_in){AUTH=a;renderAuth();loadMcp();clearInterval(AUTHPOLL);toast('已登录，底稿分析已解锁');}}catch(e){}},3000);
+  setTimeout(()=>{if(AUTHPOLL)clearInterval(AUTHPOLL);},300000);
+}
+
+async function loadMcp(){
+  $('mcpbox').style.display='';
+  try{
+    const m=await jget('api/mcp-config');
+    window._MCPCFG=JSON.stringify(m.config,null,2);window._MCPTOK=m.token;
+    $('mcpbody').innerHTML=`
+      <div class="kv"><span class="k">端点</span><span class="sid">${esc(m.url)}</span>
+        <span class="k">Bearer</span><span class="sid">${esc(m.token)}</span></div>
+      <div style="margin-top:8px">
+        <button class="btn ghost" onclick="copyText(window._MCPCFG)">复制 MCP 配置（JSON）</button>
+        <button class="btn ghost" style="margin-left:6px" onclick="copyText(window._MCPTOK)">复制接入码</button></div>
+      <div class="note" style="margin-top:6px">工具：${m.tools.join(' / ')}<br>${esc(m.note)}<br>
+      粘贴到任意 MCP 客户端（Claude Desktop / Cursor / 豆包等）即可让你的 Agent 检索粗筛名单、拉取企业档案并运行完整分析引擎。</div>`;
+  }catch(e){$('mcpbody').innerHTML='<div class="note" style="color:var(--yellow)">'+esc(e.message)+'</div>';}
+}
+function copyText(s){if(navigator.clipboard){navigator.clipboard.writeText(s).then(()=>toast('已复制')).catch(()=>fallbackCopy(s));}else fallbackCopy(s);}
+function fallbackCopy(s){const t=document.createElement('textarea');t.value=s;document.body.appendChild(t);t.select();try{document.execCommand('copy');toast('已复制');}catch(e){toast('复制失败');}t.remove();}
+
+// ---------- 项目团队协同 ----------
+let PROJECTS=[];
+async function loadProjects(){
+  try{
+    const d=await jget('api/projects');
+    PROJECTS=d.projects||[];
+  }catch(e){PROJECTS=[];}
+  renderProjects();
+}
+function renderProjects(){
+  const sel=$('prjsel');
+  if(sel)sel.innerHTML='<option value="">不挂项目（仅平台公共层）</option>'+
+    PROJECTS.map(p=>`<option value="${esc(p.project_id)}">${esc(p.name)}（${esc(p.company_name||p.company_key)}·${p.role==='owner'?'负责人':'成员'}）</option>`).join('');
+  const box=$('pjlist');
+  if(!PROJECTS.length){box.innerHTML='<div class="note" style="color:var(--dim)">还没有项目：创建一个，或凭队友发来的邀请码加入</div>';return;}
+  box.innerHTML=PROJECTS.map(p=>`
+    <div class="fitem" style="flex-wrap:wrap">
+      <span class="fname">${esc(p.name)} <span class="sid">${esc(p.project_id)}</span>
+        <span class="tag" style="margin-left:6px">${p.role==='owner'?'负责人':'成员'}</span>
+        <span style="color:var(--dim);font-size:12px">底稿 ${p.n_sources} 份 · ${esc(p.company_name||p.company_key)}</span></span>
+      ${p.role==='owner'?`
+        <span class="sid" title="发给队友即可加入">邀请码 ${esc(p.invite_code)}</span>
+        <button class="btn ghost" style="padding:4px 10px" onclick="copyText('${esc(p.invite_code)}')">复制邀请码</button>
+        <input id="mb_${esc(p.project_id)}" placeholder="队友邮箱" style="width:170px;padding:4px 8px">
+        <button class="btn ghost" style="padding:4px 10px" onclick="addMember('${esc(p.project_id)}')">添加成员</button>`:''}
+      <span style="color:var(--dim);font-size:12px">${(p.members||[]).map(m=>esc(m.email)+(m.role==='owner'?'★':'')).join('，')}</span>
+    </div>`).join('');
+}
+async function createProject(){
+  if(!AUTH.logged_in){toast('请先登录/注册');openAuth('signin');return;}
+  const name=($('pjname')||{}).value||'',key=($('pjkey')||{}).value||'';
+  if(!name.trim()){toast('请填写项目名称');return;}
+  if(!/^[0-9A-HJ-NPQRTUWXY]{18}$/.test(key.trim().toUpperCase())){toast('请填写18位统一社会信用代码');return;}
+  try{
+    const fd=new FormData();fd.append('name',name.trim());fd.append('company_key',key.trim().toUpperCase());
+    const r=await fetch('api/projects',{method:'POST',body:fd});
+    const d=await r.json();
+    if(!d.ok)throw new Error(d.detail||('HTTP '+r.status));
+    toast('项目已创建，邀请码已生成');
+    $('pjname').value='';$('pjkey').value='';
+    loadProjects();
+  }catch(e){toast(e.message);}
+}
+async function joinProject(){
+  if(!AUTH.logged_in){toast('请先登录/注册');openAuth('signin');return;}
+  const code=($('pjcode')||{}).value||'';
+  if(!code.trim()){toast('请填写邀请码');return;}
+  try{
+    const fd=new FormData();fd.append('invite_code',code.trim());
+    const r=await fetch('api/projects/join',{method:'POST',body:fd});
+    const d=await r.json();
+    if(!d.ok)throw new Error(d.detail||('HTTP '+r.status));
+    toast('已加入项目「'+d.project.name+'」');
+    $('pjcode').value='';
+    loadProjects();
+  }catch(e){toast(e.message);}
+}
+async function addMember(pid){
+  const box=$('mb_'+pid);const email=(box||{}).value||'';
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())){toast('请填写队友邮箱');return;}
+  try{
+    const fd=new FormData();fd.append('email',email.trim());
+    const r=await fetch('api/projects/'+pid+'/members',{method:'POST',body:fd});
+    const d=await r.json();
+    if(!d.ok)throw new Error(d.detail||('HTTP '+r.status));
+    toast(d.message||'已添加');box.value='';
+    loadProjects();
+  }catch(e){toast(e.message);}
+}
+
+const drop=$('drop'),fpick=$('fpick');
+drop.onclick=()=>fpick.click();
+drop.ondragover=e=>{e.preventDefault();drop.classList.add('over');};
+drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');addFiles(e.dataTransfer.files);};
+fpick.onchange=()=>{addFiles(fpick.files);fpick.value='';};
+function addFiles(fl){
+  for(const f of fl){
+    if(FILES.length>=6){toast('最多 6 份');break;}
+    if(!/\.(md|txt|json|markdown)$/i.test(f.name)){toast('仅支持 .md/.txt/.json');continue;}
+    if(f.size>2*1024*1024){toast(f.name+' 超过 2MB');continue;}
+    FILES.push({file:f,kind:guessKind(f.name)});
+  }
+  renderFiles();
+}
+function guessKind(n){
+  if(/专利|patent|PAT/i.test(n))return 'patent';
+  if(/财务|利润|营收|financ/i.test(n))return 'financial';
+  if(/中标|招标|bid/i.test(n))return 'bid';
+  if(/判决|裁定|司法|诉讼/i.test(n))return 'judicial';
+  if(/工商|执照|注册/i.test(n))return 'company';
+  if(/风险|处罚|失信/i.test(n))return 'risk';
+  if(/官网|新闻|宣传|产品|intro|about/i.test(n))return 'web';
+  return 'other';
+}
+function renderFiles(){
+  $('filelist').innerHTML=FILES.map((f,i)=>`
+    <div class="fitem">
+      <span class="fname" title="${esc(f.file.name)}">${esc(f.file.name)} <span style="color:var(--dim)">(${(f.file.size/1024).toFixed(0)}KB)</span></span>
+      <select onchange="FILES[${i}].kind=this.value">
+        ${Object.entries(KINDS).map(([k,v])=>`<option value="${k}" ${f.kind===k?'selected':''}>${v}</option>`).join('')}
+      </select>
+      <button onclick="FILES.splice(${i},1);renderFiles()" title="移除">✕</button>
+    </div>`).join('');
+}
+async function loadMeta(){
+  try{const m=await jget('api/meta');
+    $('domain').innerHTML=m.domain_options.map(d=>`<option>${esc(d)}</option>`).join('')+'<option>通用</option>';
+  }catch(e){}
+}
+function step(id,st){const el=$(id);el.className='step '+(st||'');}
+
+async function doAnalyze(){
+  if(!AUTH.logged_in){toast('请先登录/注册');openAuth('signin');return;}
+  if(!FILES.length){toast('请先上传底稿文件');return;}
+  const key=($('ckey')||{}).value||'',name=($('cname')||{}).value||'';
+  if(!/^[0-9A-HJ-NPQRTUWXY]{18}$/.test(key.trim().toUpperCase())){toast('请填写18位统一社会信用代码');return;}
+  const fd=new FormData();
+  fd.append('company_key',key.trim().toUpperCase());
+  fd.append('company_name',name.trim());
+  fd.append('domain',$('domain').value);
+  fd.append('stage',$('stage').value);
+  const pid=($('prjsel')||{}).value||'';
+  if(pid)fd.append('project_id',pid);
+  FILES.forEach(f=>{fd.append('files',f.file,f.file.name);fd.append('kinds',f.kind);});
+  $('goBtn').disabled=true;$('goBtn').textContent='分析中…';
+  ['st1','st2','st3','st4'].forEach(s=>step(s,''));
+  step('st1','doing');
+  setTimeout(()=>{if($('st1').classList.contains('doing')){step('st1','done');step('st2','doing');}},900);
+  setTimeout(()=>{if($('st2').classList.contains('doing')){step('st2','done');step('st3','doing');}},2200);
+  try{
+    const r=await fetch('api/dossier/analyze',{method:'POST',body:fd});
+    const d=await r.json();
+    if(!d.ok){throw new Error(d.error||('HTTP '+r.status));}
+    step('st1','done');step('st2','done');step('st3','done');step('st4','done');
+    renderResult(d);toast('分析完成：'+(d.innovation?.total_score??'?')+'分');
+  }catch(e){
+    ['st1','st2','st3','st4'].forEach(s=>step(s,''));
+    toast('分析失败：'+e.message);
+  }finally{
+    $('goBtn').disabled=false;$('goBtn').textContent='开始分析（SQLite 落库 → WeKnora 检索 → 引擎评分）';
+  }
+}
+
+function fmtWan(v){if(v==null)return '—';if(Math.abs(v)>=10000)return (v/10000).toFixed(2)+' 亿';return Math.round(v).toLocaleString()+' 万';}
+
+function renderResult(d){
+  $('runid').textContent=d.run_id||'';
+  const inn=d.innovation||{},pqi=d.pqi||{},flags=d.risk_flags||[],fun=d.funnel||{};
+  const mrows=(inn.metrics||[]).map(m=>`
+    <tr><td>${esc(m.label||m.code)}</td>
+    <td class="num">${m.missing?'<span style="color:var(--dim)">缺失</span>':esc(String(m.raw))}</td>
+    <td class="num">${m.missing?'—':(m.score??'—')}</td>
+    <td class="num">${m.missing?'调权':(m.weight??'—')}</td></tr>`).join('');
+  const flagHtml=flags.map(f=>`<span class="flag ${f.level}">${f.level==='red'?'红灯':'黄灯'} ${esc(f.code)} · ${esc(f.title)}</span>`).join('')||'<span class="note">无风险灯</span>';
+  const pats=(fun.core_patents||[]).map(p=>`
+    <div class="pat"><b>${esc(p.title||p.pn||p.source_id)}</b>
+      <span class="tag" style="float:right">${esc(p.type||'')}</span><br>
+      <span class="note">${esc(p.pn||'')} · ${p.type==='invention'?'发明专利':p.type==='utility'?'实用新型':p.type||'—'} · 漏斗保留</span></div>`).join('');
+  const up=(d.uploads&&d.uploads.saved)||[];
+  const ing=d.weknora_ingest||{};
+  const fs=d.facts_summary||{};
+  const fsHtml=Object.entries(fs).map(([k,v])=>`${esc(k)}：${v.degraded?'<span style="color:var(--yellow)">降级本地</span>':'<span style="color:var(--green)">WeKnora在线</span>'} ×${v.n}`).join('｜');
+  $('result').innerHTML=`
+    <div class="scorecard">
+      <div class="big"><b style="color:${GRADE_C[inn.grade]||'#fff'}">${(inn.total_score??0).toFixed(1)}</b><span>创新积分2.0总分</span></div>
+      <div class="big"><b>${(inn.core_score??0).toFixed(1)}</b><span>核心指标（满分100）</span></div>
+      <div class="big"><b>${inn.bonus_score??0}</b><span>加分项（≤30）</span></div>
+      <div class="big"><b style="color:${GRADE_C[inn.grade]||'#fff'}">${esc(inn.grade||'?')}</b><span>等级 A≥85/B≥70/C≥60</span></div>
+      <div class="big"><b>${(pqi.composite??0).toFixed(3)}</b><span>PQI 专利质量</span></div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div class="note" style="margin-bottom:4px">风险灯（红≥2 或 fact_score&lt;50% 触发一票否决）</div>${flagHtml}</div>
+    <table class="mt"><tr><th>指标</th><th style="text-align:right">数值</th><th style="text-align:right">得分</th><th style="text-align:right">权重</th></tr>${mrows}</table>
+    ${inn.missing_reweighted&&inn.missing_reweighted.length?`<div class="note" style="margin:8px 0;color:var(--yellow)">缺失动态调权：${inn.missing_reweighted.join('、')}（未编造，按规则组内再分配权重）</div>`:''}
+    ${pats?`<div style="margin-top:12px"><div class="note" style="margin-bottom:4px">漏斗精选核心专利（Top${fun.core_patents?fun.core_patents.length:0}）</div>${pats}</div>`:''}
+    <div style="margin-top:12px">
+      <div class="note" style="margin-bottom:6px">事实桥（SQLite 白名单 × WeKnora 混合检索）</div>
+      <div class="note">${fsHtml||'—'}</div>
+      <div class="note" style="margin-top:6px">上传底稿：${up.map(u=>`<span class="sid">${esc(u.source_id)}</span>`).join('、')||'—'}
+        ｜ WeKnora 入库：${ing.uploaded??0} 成功 / ${ing.failed??0} 失败 ${ing.note?('· '+esc(ing.note)):''}</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      ${(Object.entries(d.packs||{})).map(([k,v])=>`<button class="btn ghost" onclick="location.href='api/pack?path=${encodeURIComponent(v)}'">下载 ${esc(k)} 上下文包</button>`).join('')}
+    </div>`;
+}
+
+loadAuth();loadMeta();renderFiles();
+</script>
+</body>
+</html>

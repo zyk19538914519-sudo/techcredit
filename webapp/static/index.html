@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>一画专利评估分析系统 · 创新积分2.0</title>
+<style>
+:root{
+  --txt:#eaf2fb; --sub:rgba(234,242,251,.62); --dim:rgba(234,242,251,.4);
+  --cyan:#38bdf8; --gold:#fbbf24; --green:#34d399; --red:#f87171; --yellow:#facc15;
+  --A:#fbbf24; --B:#22d3ee; --C:#60a5fa; --D:#64748b;
+  --glass:rgba(7,13,26,.55); --glass2:rgba(7,13,26,.78); --edge:rgba(255,255,255,.14);
+  --font-cn:'Yihua','Noto Sans SC','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+}
+@font-face{font-family:'Yihua';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/yihua-500.woff2?v=2) format('woff2')}
+@font-face{font-family:'Yihua';font-style:normal;font-weight:900;font-display:swap;src:url(fonts/yihua-900.woff2?v=2) format('woff2')}
+@font-face{font-family:'Yihua';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/yihua-700.woff2) format('woff2')}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:#000;color:var(--txt);font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:14px;overflow:hidden}
+a{color:var(--cyan);text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+
+/* ===== full-bleed Earth ===== */
+#globe{position:fixed;inset:0;background:#000 url('earth_still.jpg') 62% 70%/cover no-repeat}
+#gwrap{position:absolute;inset:0;transition:transform .25s}
+.gdot{position:absolute;border-radius:50%;transform:translate(-50%,-50%);cursor:pointer;box-shadow:0 0 12px 1px currentColor;border:1px solid rgba(255,255,255,.4)}
+.gdot:hover{filter:brightness(1.3)}
+.gdot.rip::before{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid currentColor;opacity:.7;animation:rip 2s ease-out infinite}
+@keyframes rip{0%{transform:scale(.6);opacity:.8}100%{transform:scale(2.3);opacity:0}}
+#gtip{position:fixed;z-index:30;pointer-events:none;background:var(--glass2);backdrop-filter:blur(12px);border:1px solid var(--edge);border-radius:10px;padding:7px 11px;font-size:12px;color:var(--txt);opacity:0;transition:opacity .12s;max-width:250px}
+
+/* ===== floating glass UI (no boxes/frames) ===== */
+.glass{background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--edge)}
+/* ===== hero title block（设计稿复刻：品牌行+大标题+slogan+大字统计） ===== */
+.brand{position:fixed;top:48%;left:50%;transform:translate(-50%,-50%);z-index:10;width:min(92vw,1100px);text-align:center;text-shadow:0 1px 12px rgba(0,0,0,.8)}
+.brand h1{font-family:var(--font-cn);font-weight:500;font-size:clamp(15px,2vw,20px);letter-spacing:.5px;color:#fff}
+.brand h1 .radar{color:#fff;margin-right:1px}
+.brand .title{margin-top:clamp(8px,1.6vh,18px)}
+.brand .title img{display:block;margin:0 auto;width:clamp(300px,40vw,600px);height:auto;filter:drop-shadow(0 2px 28px rgba(0,0,0,.55))}
+.brand .sub{font-family:var(--font-cn);font-weight:500;color:rgba(234,242,251,.62);font-size:clamp(12px,1.7vw,24px);letter-spacing:.6px;margin-top:clamp(8px,1.4vh,16px)}
+.brand .cta{margin-top:clamp(100px,13.3vw,200px);background:rgba(255,255,255,.08);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:clamp(12px,2.2vh,20px) clamp(26px,4vw,52px);cursor:pointer;display:inline-flex;align-items:center;gap:.55em;font-family:var(--font-cn);font-weight:700;font-size:clamp(22px,2.8vw,40px);letter-spacing:1px;color:#fff;line-height:1;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 4px 24px rgba(0,0,0,.25);transition:background .25s,border-color .25s,filter .25s}
+.brand .cta .ar{transition:transform .3s ease}
+.brand .cta:hover{background:rgba(255,255,255,.14);border-color:var(--cyan)}
+.brand .cta:hover .ar{transform:translateX(8px)}
+#authchip{position:fixed;top:20px;right:24px;z-index:10;display:flex;gap:8px;align-items:center}
+.pill{border-radius:999px;padding:8px 18px;font-size:13px;font-weight:600;color:#fff;border:1px solid var(--edge);background:linear-gradient(135deg,rgba(14,165,233,.85),rgba(37,99,235,.85));backdrop-filter:blur(10px)}
+.pill:hover{filter:brightness(1.15)}
+.pill.ghost{background:var(--glass);color:var(--sub);font-weight:400}
+.pill.ghost:hover{color:#fff;border-color:var(--cyan)}
+.tag{display:inline-block;background:rgba(255,255,255,.08);border:1px solid var(--edge);color:var(--sub);border-radius:999px;padding:3px 10px;font-size:11px;margin:2px 4px 2px 0}
+.tag.hl{color:var(--cyan);border-color:rgba(56,189,248,.5)}
+.zoomctl{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:8px}
+.zoomctl button{width:38px;height:38px;border-radius:50%;border:1px solid var(--edge);background:var(--glass);backdrop-filter:blur(12px);color:var(--txt);font-size:17px;line-height:1}
+.zoomctl button:hover{border-color:var(--cyan);color:var(--cyan)}
+#listbtn{position:fixed;right:24px;bottom:22px;z-index:10;border-radius:999px;padding:10px 20px;font-size:13px;font-weight:600;color:#fff}
+#listbtn span{color:var(--cyan);margin-left:6px}
+
+/* ===== slide-in glass drawers ===== */
+#lbackdrop,#backdrop{position:fixed;inset:0;background:rgba(2,6,14,.45);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:.2s;z-index:40}
+#lbackdrop.open,#backdrop.open{opacity:1;pointer-events:auto}
+#listdrawer,#drawer{position:fixed;top:0;right:-560px;width:520px;max-width:94vw;height:100vh;background:var(--glass2);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-left:1px solid var(--edge);z-index:50;transition:right .25s ease;display:flex;flex-direction:column}
+#listdrawer.open,#drawer.open{right:0}
+.dhead{padding:16px 20px;border-bottom:1px solid var(--edge);position:relative}
+.dhead h2{font-size:16px;margin-bottom:6px;padding-right:36px}
+.close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--sub);font-size:22px;line-height:1}
+.close:hover{color:#fff}
+.filters{display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid var(--edge)}
+.filters input,.filters select{background:rgba(255,255,255,.06);border:1px solid var(--edge);color:var(--txt);border-radius:999px;padding:8px 12px;font-size:12px;outline:none}
+.filters input{flex:1;min-width:60px}
+.filters input:focus,.filters select:focus{border-color:var(--cyan)}
+#list{flex:1;overflow-y:auto}
+.crow{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer;transition:.12s}
+.crow:hover{background:rgba(255,255,255,.06)}
+.crow.active{background:rgba(56,189,248,.12);border-left:3px solid var(--cyan)}
+.crow .rank{width:24px;color:var(--dim);font-size:12px;text-align:right;flex:none}
+.crow .info{flex:1;min-width:0}
+.crow .nm{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crow .meta{font-size:11px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crow .score{flex:none;text-align:right}
+.crow .score b{font-size:15px}
+.grade{display:inline-block;min-width:20px;text-align:center;border-radius:6px;font-size:11px;font-weight:700;padding:2px 6px;color:#0a1120}
+.grade.A{background:var(--A)} .grade.B{background:var(--B)} .grade.C{background:var(--C)} .grade.D{background:var(--D);color:#fff}
+#dbody{flex:1;overflow-y:auto;padding:16px 20px}
+.sect{margin-bottom:18px}
+.sect h3{font-size:13px;color:var(--cyan);margin-bottom:8px;letter-spacing:1px}
+.scorecard{display:flex;gap:10px;align-items:stretch}
+.scorecard .big{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--edge);border-radius:12px;padding:12px;text-align:center}
+.scorecard .big b{font-size:26px;display:block}
+.scorecard .big span{font-size:11px;color:var(--sub)}
+table.mt{width:100%;border-collapse:collapse;font-size:12px}
+table.mt th{color:var(--dim);font-weight:400;text-align:left;padding:5px 6px;border-bottom:1px solid var(--edge)}
+table.mt td{padding:6px;border-bottom:1px solid rgba(255,255,255,.06)}
+table.mt td.num{text-align:right;font-variant-numeric:tabular-nums}
+.miss{color:var(--dim);font-size:11px;background:rgba(255,255,255,.06);border-radius:5px;padding:1px 6px}
+.bar{height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;min-width:46px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#0ea5e9,#22d3ee)}
+.note{font-size:11px;color:var(--dim);line-height:1.7}
+.flag{border-radius:9px;padding:8px 12px;margin-bottom:6px;font-size:12px;border:1px solid}
+.flag.red{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.4)}
+.flag.yellow{background:rgba(250,204,21,.07);border-color:rgba(250,204,21,.35)}
+.flag.green{background:rgba(52,211,153,.07);border-color:rgba(52,211,153,.35)}
+.flag b{display:block;margin-bottom:2px}
+.flag.red b{color:var(--red)} .flag.yellow b{color:var(--yellow)} .flag.green b{color:var(--green)}
+.pat{background:rgba(255,255,255,.05);border:1px solid var(--edge);border-radius:9px;padding:8px 12px;margin-bottom:6px;font-size:12px}
+.pat .t{font-weight:600;margin-bottom:3px}
+.pat .m{color:var(--sub);font-size:11px}
+.sid{font-family:ui-monospace,monospace;font-size:10px;color:var(--dim)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--edge);border-top-color:var(--cyan);border-radius:50%;animation:sp 1s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px}
+.kv .k{color:var(--dim)}
+.btn{background:linear-gradient(135deg,#0ea5e9,#2563eb);color:#fff;border:none;border-radius:999px;padding:9px 18px;font-size:13px;font-weight:600;transition:.15s}
+.btn:hover{filter:brightness(1.15)}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn.ghost{background:transparent;border:1px solid var(--edge);color:var(--sub);font-weight:400}
+.btn.ghost:hover{color:var(--txt);border-color:var(--cyan)}
+.lock{background:rgba(255,255,255,.05);border:1px dashed rgba(56,189,248,.4);border-radius:12px;padding:14px}
+.lock b{color:var(--gold)}
+.toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(8px);background:var(--glass2);backdrop-filter:blur(12px);border:1px solid var(--cyan);color:var(--txt);border-radius:999px;padding:9px 18px;font-size:13px;opacity:0;transition:.25s;z-index:80;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (max-width:640px){
+  .brand{top:46%}
+  .brand h1{font-size:15px}
+  .brand .title img{width:66vw}
+  .brand .sub{font-size:12px;margin-top:8px}
+  .brand .cta{font-size:clamp(19px,5vw,24px);margin-top:22vw;letter-spacing:.5px;padding:11px 26px}
+  #authchip{top:14px;right:16px}
+  .zoomctl{right:16px}
+  #listbtn{right:16px;bottom:16px;padding:9px 16px}
+}
+</style>
+</head>
+<body>
+<div id="globe"><div id="gwrap"></div></div>
+<div id="gtip"></div>
+
+<div class="brand">
+  <h1><span class="radar">◉</span> 一画专利评估分析系统</h1>
+  <div class="sub">一画，让技术，成为信用</div>
+  <div class="title"><img src="yihua-title.png?v=3" alt="一画"></div>
+  <button class="cta" onclick="startExplore()">开始探索<span class="ar">→</span></button>
+</div>
+<span id="authchip"></span>
+
+<div class="zoomctl">
+  <button onclick="zoomMap(1.25)" title="放大">+</button>
+  <button onclick="zoomMap(0.8)" title="缩小">−</button>
+  <button onclick="resetMap()" title="复位">⟲</button>
+</div>
+<button id="listbtn" class="glass" onclick="openList()">潜在企业名单<span id="lcount"></span></button>
+
+<div id="lbackdrop" onclick="closeList()"></div>
+<div id="listdrawer">
+  <div class="dhead">
+    <button class="close" onclick="closeList()">×</button>
+    <h2>潜在企业名单</h2>
+  </div>
+  <div class="filters">
+    <input id="q" placeholder="搜索企业 / 城市 / 代码" oninput="renderList()">
+    <select id="fdom" onchange="renderList()"></select>
+    <select id="fgrade" onchange="renderList()">
+      <option value="">全部级</option><option>A</option><option>B</option><option>C</option><option>D</option>
+    </select>
+  </div>
+  <div id="list"></div>
+</div>
+
+<div id="backdrop" onclick="closeDrawer()"></div>
+<div id="drawer">
+  <div class="dhead">
+    <button class="close" onclick="closeDrawer()">×</button>
+    <h2 id="dname"></h2>
+    <div id="dtags"></div>
+  </div>
+  <div id="dbody"></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const GRADE_C={A:'#fbbf24',B:'#22d3ee',C:'#60a5fa',D:'#64748b'};
+let META=null,ALL=[],SEL=null,POLL=null,CUR=null;
+let AUTH={logged_in:false},AUTHPOLL=null;
+
+const fmtWan=v=>{
+  if(v==null)return '—';
+  if(Math.abs(v)>=10000)return (v/10000).toFixed(2)+' 亿';
+  return Math.round(v).toLocaleString()+' 万';
+};
+const fmtRaw=(code,v)=>{
+  if(v==null)return '—';
+  if(code==='RD_EXPENSE'||code==='MAIN_REVENUE'||code==='TECH_CONTRACT')return fmtWan(v);
+  if(code==='RD_RATIO'||code==='REV_GROWTH'||code==='ROE'||code==='RD_STAFF_RATIO')return v.toFixed(2)+'%';
+  return Number.isInteger(v)?v:v.toFixed(1);
+};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function jget(u){const r=await fetch(u);if(!r.ok)throw new Error(await r.text());return r.json();}
+
+async function loadAuth(){try{AUTH=await jget('api/auth/me');}catch(e){AUTH={logged_in:false};}renderAuth();}
+function renderAuth(){
+  $('authchip').innerHTML=AUTH.logged_in
+    ?`<span class="tag hl">${esc(AUTH.email)}</span><button class="pill ghost" onclick="location.href='/account'">账户</button><button class="pill ghost" onclick="doLogout()">退出</button>`
+    :``;
+}
+function startExplore(){openAuth('signin')}
+function openAuth(kind){
+  window.open('/'+kind+'?next='+encodeURIComponent(location.pathname+location.search),'_blank');
+  stopAuthPoll();
+  AUTHPOLL=setInterval(async()=>{
+    try{const a=await jget('api/auth/me');
+      if(a.logged_in){AUTH=a;renderAuth();stopAuthPoll();toast('已登录，详细分析与 MCP 已解锁');if(SEL&&CUR)renderDrawer(CUR);}
+    }catch(e){}
+  },3000);
+  setTimeout(stopAuthPoll,300000);
+}
+function stopAuthPoll(){if(AUTHPOLL){clearInterval(AUTHPOLL);AUTHPOLL=null;}}
+async function doLogout(){try{await fetch('/api/logout',{method:'POST',credentials:'include'});}catch(e){}location.reload();}
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.classList.add('on'),10);setTimeout(()=>{t.classList.remove('on');setTimeout(()=>t.remove(),300);},2600);}
+function lockHtml(){return `
+  <div class="lock">
+    <b>🔒 登录后可用详细分析</b>
+    <div class="note" style="margin:6px 0 10px">使用一画账号邮箱注册/登录（独立账号体系），新标签页打开；完成后回到本页自动解锁，无需刷新。</div>
+    <button class="btn" onclick="openAuth('signin')">一画账号登录</button>
+    <button class="btn ghost" style="margin-left:8px" onclick="openAuth('signup')">注册新账号</button>
+    <div class="note" style="margin-top:10px">登录后还可领取「详细分析版 MCP」：一画账户接入码作 Bearer，任意 MCP 客户端可接。</div>
+  </div>`;}
+async function loadMcpPanel(){
+  const el=$('mcp-panel');if(!el)return;
+  try{
+    const m=await jget('api/mcp-config');
+    window._MCPCFG=JSON.stringify(m.config,null,2);window._MCPTOK=m.token;
+    el.innerHTML=`<h3 style="font-size:12px;color:var(--cyan);margin-bottom:6px">⑤ 详细分析版 MCP（登录专属）</h3>
+      <div class="kv"><span class="k">端点</span><span class="sid" style="font-size:11px">${esc(m.url)}</span>
+      <span class="k">Bearer</span><span class="sid" style="font-size:11px">${esc(m.token)}</span></div>
+      <div style="margin-top:8px"><button class="btn ghost" onclick="copyText(window._MCPCFG)">复制 MCP 配置</button>
+      <button class="btn ghost" style="margin-left:6px" onclick="copyText(window._MCPTOK)">复制接入码</button></div>
+      <div class="note" style="margin-top:6px">工具：${m.tools.join(' / ')}<br>${esc(m.note)}<br>用法：复制配置粘进你的 Agent 的 MCP 设置（豆包工作版 / WorkBuddy / Claude Desktop / Cursor 等）；仅支持手填的客户端填端点 + Bearer 接入码即可。</div>`;
+  }catch(e){el.innerHTML='<div class="note" style="color:var(--yellow)">'+esc(e.message)+'</div>';}
+}
+function copyText(s){if(navigator.clipboard){navigator.clipboard.writeText(s).then(()=>toast('已复制')).catch(()=>fallbackCopy(s));}else fallbackCopy(s);}
+function fallbackCopy(s){const t=document.createElement('textarea');t.value=s;document.body.appendChild(t);t.select();try{document.execCommand('copy');toast('已复制');}catch(e){toast('复制失败，请手动选择');}t.remove();}
+
+async function init(){
+  META=await jget('api/meta');
+  const d=await jget('api/companies');
+  ALL=d.companies;
+  await loadAuth();
+  renderFilters();renderList();
+  initGlobe();
+}
+
+function renderFilters(){
+  $('fdom').innerHTML='<option value="">全部领域</option>'+Object.keys(META.domains).map(d=>`<option>${d}</option>`).join('');
+}
+function filtered(){
+  const q=$('q').value.trim().toLowerCase(),dom=$('fdom').value,gr=$('fgrade').value;
+  return ALL.filter(c=>(!dom||c.domain===dom)&&(!gr||c.grade===gr)&&
+    (!q||(c.name+c.full_name+c.city+c.code).toLowerCase().includes(q)));
+}
+function renderList(){
+  const rows=filtered();
+  $('lcount').textContent=rows.length+' 家';
+  $('list').innerHTML=rows.map((c,i)=>`
+    <div class="crow ${SEL===c.company_key?'active':''}" onclick="openCompany('${c.company_key}')">
+      <div class="rank">${i+1}</div>
+      <div class="info">
+        <div class="nm">${esc(c.name)} ${c.cached_patents?'<span class="tag hl" style="font-size:10px">专利底稿</span>':''}${c.has_run?'<span class="tag" style="font-size:10px;color:var(--green)">已分析</span>':''}</div>
+        <div class="meta">${esc(c.city)} · ${esc(c.domain)} · ${esc(c.stage)}</div>
+      </div>
+      <div class="score"><b style="color:${GRADE_C[c.grade]}">${c.core_score.toFixed(1)}</b><br><span class="grade ${c.grade}">${c.grade}</span></div>
+    </div>`).join('')||'<div style="padding:24px;color:var(--dim)">无匹配企业</div>';
+}
+function openList(){$('listdrawer').classList.add('open');$('lbackdrop').classList.add('open');}
+function closeList(){$('listdrawer').classList.remove('open');$('lbackdrop').classList.remove('open');}
+
+/* ===== full-bleed globe with enterprise bubbles ===== */
+let DOTS=[],IW=0,IH=0,Z=1;
+const fx=(lng,lat)=>0.011448*lng-0.000581*lat-0.698973;
+const fy=(lng,lat)=>0.000421*lng-0.009888*lat+1.058270;
+function layoutGlobe(){
+  if(!IW||!IH)return;
+  const W=innerWidth,H=innerHeight;
+  const s=Math.max(W/IW,H/IH), dw=IW*s, dh=IH*s;
+  const ox=(W-dw)*0.62, oy=(H-dh)*0.70;
+  DOTS.forEach(d=>{d.el.style.left=(ox+d.fx*dw)+'px';d.el.style.top=(oy+d.fy*dh)+'px';});
+  const wrap=$('gwrap');
+  wrap.style.transformOrigin=(ox+0.60*dw)+'px '+(oy+0.78*dh)+'px';
+  wrap.style.transform='scale('+Z+')';
+}
+function initGlobe(){
+  const wrap=$('gwrap'),tip=$('gtip');
+  const topKeys=ALL.slice().sort((a,b)=>b.core_score-a.core_score).slice(0,8).map(c=>c.company_key);
+  ALL.forEach(c=>{
+    if(c.lat==null||c.lng==null)return;
+    const x=fx(c.lng,c.lat),y=fy(c.lng,c.lat);
+    if(x<0.02||x>0.98||y<0.02||y>0.98)return;
+    const d=document.createElement('div');
+    d.className='gdot'+(topKeys.includes(c.company_key)?' rip':'');
+    const sz=8+(c.core_score/100)*16;
+    d.style.width=sz+'px';d.style.height=sz+'px';
+    d.style.color=GRADE_C[c.grade];d.style.background=GRADE_C[c.grade];
+    d.addEventListener('click',()=>openCompany(c.company_key));
+    d.addEventListener('mouseenter',()=>{tip.innerHTML='<b>'+esc(c.name)+'</b> <span style="color:'+GRADE_C[c.grade]+'">'+c.grade+'级 '+c.core_score.toFixed(1)+'分</span><br>'+esc(c.city)+' · '+esc(c.domain);tip.style.opacity=1;});
+    d.addEventListener('mousemove',e=>{tip.style.left=Math.max(4,Math.min(innerWidth-260,e.clientX+14))+'px';tip.style.top=(e.clientY+14)+'px';});
+    d.addEventListener('mouseleave',()=>{tip.style.opacity=0;});
+    wrap.appendChild(d);
+    DOTS.push({el:d,fx:x,fy:y});
+  });
+  const img=new Image();
+  img.onload=()=>{IW=img.naturalWidth;IH=img.naturalHeight;layoutGlobe();};
+  img.src='earth_still.jpg';
+  addEventListener('resize',layoutGlobe);
+  window.zoomMap=f=>{Z=Math.min(4,Math.max(1,Z*f));layoutGlobe();};
+  window.resetMap=()=>{Z=1;layoutGlobe();};
+}
+
+async function openCompany(key){
+  SEL=key;renderList();
+  closeList();
+  $('drawer').classList.add('open');$('backdrop').classList.add('open');
+  $('dbody').innerHTML='<div style="padding:30px;color:var(--sub)"><span class="spin"></span>加载企业档案…</div>';
+  stopPoll();
+  try{
+    CUR=await jget('api/company/'+encodeURIComponent(key));
+    renderDrawer(CUR);
+    if(CUR.latest_run&&AUTH.logged_in)loadAnalysis(key,false);
+  }catch(e){
+    $('dbody').innerHTML='<div style="padding:30px;color:var(--red)">加载失败：'+esc(e.message)+'</div>';
+  }
+}
+function closeDrawer(){
+  $('drawer').classList.remove('open');$('backdrop').classList.remove('open');
+  SEL=null;stopPoll();renderList();
+}
+function stopPoll(){if(POLL){clearInterval(POLL);POLL=null;}}
+
+function renderDrawer(c){
+  $('dname').innerHTML=`${esc(c.full_name||c.name)} <span class="grade ${c.grade}" style="font-size:13px;vertical-align:2px">${c.grade}</span>`;
+  $('dtags').innerHTML=[
+    c.code?`A股 ${c.code}`:'',c.domain,c.stage,c.city,
+    c.profile&&c.profile.founded?`成立 ${c.profile.founded.slice(0,10)}`:'',
+    c.is_cached_entity?'已缓存底稿样例':''
+  ].filter(Boolean).map(t=>`<span class="tag">${esc(t)}</span>`).join('');
+  const p=c.profile||{};
+  const mrows=(c.metrics||[]).filter(m=>!m.missing&&m.raw!=null).map(m=>{
+    const lab=(META.indicators.find(i=>i.code===m.code)||{}).label||m.code;
+    return `<tr><td>${lab}</td><td class="num">${fmtRaw(m.code,m.raw)}</td>
+      <td class="num"><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end"><div class="bar"><i style="width:${m.score}%"></i></div>${m.score.toFixed(0)}</div></td>
+      <td class="num">${m.weighted.toFixed(1)}</td></tr>`;
+  }).join('')||'<tr><td colspan="4" class="note" style="padding:8px 6px">暂无可展示指标（缺失指标已动态调权，不单独列示）</td></tr>';
+  const srcs=(c.cached_sources||[]).map(s=>`<span class="tag hl">${esc(s.kind)} × ${s.c}</span>`).join('')||'<span class="note">暂无缓存底稿（深度分析将仅基于免费财务口径）</span>';
+  $('dbody').innerHTML=`
+    <div class="sect">
+      <div class="scorecard">
+        <div class="big"><b style="color:${GRADE_C[c.grade]}">${c.core_score.toFixed(1)}</b><span>核心分（粗筛）</span></div>
+        <div class="big"><b>${c.bonus_score.toFixed(0)}</b><span>加分项（未采集）</span></div>
+        <div class="big"><b>${c.total_score.toFixed(1)}</b><span>总分 / 130</span></div>
+      </div>
+      <div class="note" style="margin-top:6px">粗筛近似分：上市样本同期群归一化，缺失指标权重已动态再分配；正式口径以深度分析为准。</div>
+    </div>
+    <div class="sect"><h3>创新积分2.0 指标明细</h3>
+      <table class="mt"><tr><th>指标</th><th style="text-align:right">数值</th><th style="text-align:right">得分</th><th style="text-align:right">加权</th></tr>${mrows}</table>
+    </div>
+    <div class="sect"><h3>企业画像</h3>
+      <div class="kv">
+        ${p.industry?`<span class="k">东财行业</span><span>${esc(p.industry)}</span>`:''}
+        ${p.reg_addr?`<span class="k">注册地址</span><span>${esc(p.reg_addr)}</span>`:''}
+        ${p.website?`<span class="k">官网</span><span>${esc(p.website)}</span>`:''}
+        ${p.annual_income&&p.annual_income.period?`<span class="k">年报期</span><span>${esc(String(p.annual_income.period))}</span>`:''}
+        ${p.rev_growth_pct!=null?`<span class="k">营收增速</span><span>${Number(p.rev_growth_pct).toFixed(2)}%</span>`:''}
+        ${p.roe_pct!=null?`<span class="k">ROE</span><span>${Number(p.roe_pct).toFixed(2)}%</span>`:''}
+      </div>
+      ${p.main_business?`<div class="note" style="margin-top:8px;color:var(--sub)">${esc(p.main_business)}</div>`:''}
+    </div>
+    <div class="sect"><h3>缓存证据底稿</h3>${srcs}</div>
+    <div class="sect" id="ana-sect">
+      <h3>深度分析（引擎正式口径）</h3>
+      <div id="ana-body">${AUTH.logged_in?`
+        <button class="btn" id="ana-btn" onclick="triggerAnalysis('${c.company_key}')">⚡ 一键深度分析</button>
+        <div class="note" style="margin-top:8px">运行 OECD PQI 专利质量 + 创新积分2.0 + 硬排雷 + 漏斗抽样；仅用本地缓存与免费口径数据，零付费API调用。</div>`:lockHtml()}
+      </div>
+      <div id="mcp-panel" style="margin-top:12px"></div>
+    </div>`;
+  if(AUTH.logged_in)loadMcpPanel();
+}
+
+async function triggerAnalysis(key){
+  if(!AUTH.logged_in){const b=$('ana-body');if(b)b.innerHTML=lockHtml();return;}
+  const btn=$('ana-btn');if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span>分析中…';}
+  try{
+    const res=await fetch('api/company/'+encodeURIComponent(key)+'/analyze',{method:'POST'});
+    if(res.status===401){AUTH={logged_in:false};renderAuth();if(CUR)renderDrawer(CUR);return;}
+    stopPoll();
+    POLL=setInterval(()=>loadAnalysis(key,true),1500);
+    loadAnalysis(key,true);
+  }catch(e){
+    $('ana-body').innerHTML='<div class="note" style="color:var(--red)">启动失败：'+esc(e.message)+'</div>';
+  }
+}
+
+async function loadAnalysis(key,polling){
+  if(!AUTH.logged_in){const b=$('ana-body');if(b)b.innerHTML=lockHtml();stopPoll();return;}
+  try{
+    const a=await jget('api/company/'+encodeURIComponent(key)+'/analysis');
+    if(a.job&&a.job.status==='running'){
+      if(!polling){$('ana-body').innerHTML='<div style="color:var(--sub)"><span class="spin"></span>分析进行中…</div>';stopPoll();POLL=setInterval(()=>loadAnalysis(key,true),1500);}
+      return;
+    }
+    if(a.job&&a.job.status==='error'){
+      stopPoll();
+      $('ana-body').innerHTML='<div class="note" style="color:var(--red)">分析出错：'+esc(a.job.error)+'</div><button class="btn" style="margin-top:8px" onclick="triggerAnalysis(\''+key+'\')">重试</button>';
+      return;
+    }
+    if(a.result){stopPoll();renderAnalysis(a.result,a.run);}
+    else if(!polling){/* 无历史结果，保留按钮 */}
+  }catch(e){if(polling){stopPoll();}
+    if(/401|登录/.test(e.message)){AUTH={logged_in:false};renderAuth();if(CUR)renderDrawer(CUR);}}
+}
+
+function renderAnalysis(r,run){
+  const pqi=r.pqi||{},inn=r.innovation||{},fun=r.funnel||{};
+  const dims=pqi.dims||{};
+  const dimLab={invention_share:'发明占比',family_size:'同族规模',avg_family_index:'同族规模',ipc_breadth:'IPC广度',avg_scope_index:'IPC广度',grant_lag:'授权周期',avg_grant_index:'授权周期',inventor_retention:'发明人留存'};
+  let pqiHtml;
+  if(pqi.available===false){
+    pqiHtml='<div class="flag yellow"><b>专利底稿未缓存</b>PQI 与漏斗留空。当前仅财务口径积分；接入专利数据源后可补齐（本次不发起付费调用）。</div>';
+  }else{
+    const drows=Object.entries(dims).map(([k,v])=>{
+      let val,miss=false;
+      if(v&&typeof v==='object'){val=v.value;miss=(val==null);}
+      else val=v;
+      const shown=miss?'<span class="miss">缺失</span>':(typeof val==='number'?val.toFixed(3):esc(val));
+      return `<tr><td>${dimLab[k]||k}</td><td class="num">${shown}</td></tr>`;
+    }).join('');
+    pqiHtml=`<div class="kv" style="margin-bottom:6px"><span class="k">PQI 组合分</span><b style="color:var(--cyan)">${pqi.composite!=null?pqi.composite.toFixed(3):'—'}</b><span class="k">样本专利</span><span>${pqi.n_patents||0} 件</span></div>
+      <table class="mt">${drows}</table>`;
+  }
+  const flags=(r.risk_flags||[]);
+  const flagHtml=flags.length?flags.map(f=>`<div class="flag ${f.level}"><b>${f.level==='red'?'🔴':'🟡'} ${esc(f.title)}</b>${esc(f.detail||'')}<div class="sid">${(f.source_ids||[]).map(esc).join(' · ')}</div></div>`).join('')
+    :'<div class="flag green"><b>🟢 未触发硬排雷红灯</b>基于当前缓存专利样本的统计规则检查。</div>';
+  const pats=(fun.core_patents||[]).map(p=>`<div class="pat"><div class="t">${esc(p.title||p.pn)}</div><div class="m">${esc(p.pn||'')} · 价值分 ${p.value_score!=null?p.value_score.toFixed(2):'—'}</div><div class="sid">${esc(p.source_id||'')}</div></div>`).join('')||'<div class="note">无精选专利（样本为空）</div>';
+  const packs=Object.entries(r.packs||{}).map(([k,v])=>`<a class="tag hl" href="api/pack?path=${encodeURIComponent(v)}" download>${esc(k)} ⬇</a>`).join('');
+  $('ana-body').innerHTML=`
+    <div class="scorecard" style="margin-bottom:10px">
+      <div class="big"><b style="color:${GRADE_C[inn.grade]||'var(--cyan)'}">${inn.core_score!=null?inn.core_score.toFixed(1):'—'}</b><span>引擎核心分</span></div>
+      <div class="big"><b>${inn.grade||'—'}</b><span>分级</span></div>
+      <div class="big"><b>${inn.total_score!=null?inn.total_score.toFixed(1):'—'}</b><span>总分</span></div>
+    </div>
+    <div class="note" style="margin-bottom:10px">运行 ${esc(r.run_id)} · 领域 ${esc(inn.domain)} · 阶段 ${esc(inn.stage)} · 缺失调权：${(inn.missing_reweighted||[]).join('、')||'无'}</div>
+    <h3 style="font-size:12px;color:var(--cyan);margin:10px 0 6px">① OECD PQI 专利质量</h3>${pqiHtml}
+    <h3 style="font-size:12px;color:var(--cyan);margin:12px 0 6px">② 硬排雷红黄灯</h3>${flagHtml}
+    <h3 style="font-size:12px;color:var(--cyan);margin:12px 0 6px">③ 漏斗精选核心专利（喂给Agent的精简上下文）</h3>${pats}
+    <div class="note" style="margin:6px 0">${esc(fun.funnel_note||'')}</div>
+    <h3 style="font-size:12px;color:var(--cyan);margin:12px 0 6px">④ Agent 上下文包（4个Skill）</h3>${packs||'—'}
+    <div class="note" style="margin-top:10px">语义研判（4个Agent Skill）与银行报告生成待接入LLM后在此展示；每条结论均绑定 Source_ID 可溯源。</div>
+    <button class="btn ghost" style="margin-top:10px" onclick="triggerAnalysis('${r.company.company_key}')">重新分析</button>`;
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDrawer();closeList();}});
+init().catch(e=>{document.body.insertAdjacentHTML('beforeend','<div style="position:fixed;left:20px;bottom:20px;color:#f87171;z-index:99">初始化失败：'+esc(e.message)+'</div>');});
+</script>
+</body>
+</html>

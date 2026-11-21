@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "JianYuBidding": {
+      "url": "https://jyaiopen.jianyu360.cn/mcp",
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Jianyu-Api-Key": "<REPLACE_WITH_YOUR_TOKEN>"
+      }
+    }
+  }
+}

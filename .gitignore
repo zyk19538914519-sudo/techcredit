@@ -1,0 +1,47 @@
+# ---- secrets (never commit) ----
+.env
+.env.*
+*.env
+!*.env.example
+webapp/yihua_auth.env
+docs/qcc_mcp.json
+docs/jianyu_mcp.json
+*.key
+*.pem
+*.p12
+*.crt
+
+# ---- runtime data / caches ----
+data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+screening/run.log
+*.log
+
+# ---- python ----
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- node / frontend ----
+node_modules/
+dist/
+build/
+.vite/
+
+# ---- local backups & scratch ----
+_backup*/
+.backup_*/
+*.bak
+*.bak-*
+*.orig
+*.rej
+.DS_Store
